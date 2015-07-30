@@ -1,5 +1,5 @@
 
-sudo qemu-system-x86_64 \
+qemu-system-x86_64 \
 	--enable-kvm \
 	-hda /dev/mapper/ptah-ptah--win7 \
 	-m 2.1G \
@@ -8,7 +8,7 @@ sudo qemu-system-x86_64 \
 	-usbdevice tablet \
 	-cpu host \
 	-vga qxl \
-	-netdev bridge,id=hn0 -device e1000,netdev=hn0,id=nic1 \
-	-spice port=5900,addr=127.0.0.1,disable-ticketing 
-
+	-net nic -net tap,ifname=tap0,script=no,downscript=no \
+	-spice port=5900,addr=127.0.0.1,disable-ticketing \
+	-daemonize  \
 
