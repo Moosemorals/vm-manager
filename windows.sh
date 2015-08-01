@@ -8,7 +8,9 @@ qemu-system-x86_64 \
 	-usbdevice tablet \
 	-cpu host \
 	-vga qxl \
-	-net nic -net tap,ifname=tap0,script=no,downscript=no \
+	-monitor tcp:127.0.0.1:5901,server,nowait \
+	-netdev type=tap,ifname=tap0,script=no,downscript=no,id=net0 \
+	-device virtio-net,netdev=net0 \
 	-spice port=5900,addr=127.0.0.1,disable-ticketing \
 	-daemonize  \
 
