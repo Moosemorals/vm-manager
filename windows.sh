@@ -1,7 +1,7 @@
 
 qemu-system-x86_64 \
 	--enable-kvm \
-	-hda /dev/mapper/ptah-ptah--win7 \
+	-drive file=/dev/mapper/ptah-ptah--win7,if=virtio \
 	-m 2.1G \
 	-rtc base=localtime,clock=host \
 	-smp threads=4 \
