@@ -11,11 +11,12 @@ use warnings;
 die "Must be root" unless $> == 0;
 
 my (@required_config) = qw/name id hda mac/;
+my (%default_config) = (cpu=>'host', netdev=>'virtio-net', shutdown_cmd=>'system_powerdown');
 
 sub read_config($) {
 	my ($confFile) = @_;
 	$confFile = "${confFile}.conf";
-	my %opts;
+	my (%opts) = %default_config;
 	open CONFIG, "<", $confFile || die "Can't open config file [$confFile]: $!";
 	while (<CONFIG>) {
 		next if /^$/;
@@ -52,7 +53,6 @@ my $iface="tap${id}";
 my $serial = 5900 + ($id * 2);
 my $monitor = 5901 + ($id * 2);
 
-
 if ($cmd eq 'start') {
 	# Create a tap device, bring it up and add it to the bride.
 
@@ -61,21 +61,47 @@ if ($cmd eq 'start') {
 	system "/sbin/brctl addif br0 $iface";
 
 	# start the vm
-my (@vm) = ( '/usr/bin/qemu-system-x86_64',
+	my (@vm) = ( '/usr/bin/qemu-system-x86_64',
 		'--enable-kvm',
 		'-hda', $opts{hda},
 		'-m', '2G',
 		'-rtc', 'base=localtime,clock=host',
 		'-smp', 'threads=4',
 		'-usbdevice', 'tablet',
-		'-cpu', 'host',
+		'-cpu', $opts{cpu},
 		'-vga', 'none',
 		'-display', 'none',
 		'-serial', "tcp:127.0.0.1:$serial,server,nowait" ,
 		'-monitor', "tcp:127.0.0.1:$monitor,server,nowait" ,
 		'-netdev', "type=tap,ifname=$iface,script=no,downscript=no,id=net0",
-		'-device', "virtio-net,netdev=net0,mac=${opts{mac}}",
+		'-device', "${opts{netdev}},netdev=net0,mac=${opts{mac}}",
 		'-daemonize'
+	);
+
+	print "Starting ${opts{name}}...\n", join(" ", @vm), "\n";
+	exec @vm;
+} elsif ($cmd eq 'debug') {
+	# Create a tap device, bring it up and add it to the bride.
+
+	system "/bin/ip tuntap add dev $iface mode tap user osric";
+	system "/bin/ip link set $iface up";
+	system "/sbin/brctl addif br0 $iface";
+
+	# start the vm
+	my (@vm) = ( '/usr/bin/qemu-system-x86_64',
+		'--enable-kvm',
+		'-hda', $opts{hda},
+		'-m', '2G',
+		'-rtc', 'base=localtime,clock=host',
+		'-smp', 'threads=4',
+		'-usbdevice', 'tablet',
+		'-cpu', $opts{cpu},
+		'-vga', 'qxl',
+		'-display', 'sdl',
+		'-serial', "tcp:127.0.0.1:$serial,server,nowait" ,
+		'-monitor', "tcp:127.0.0.1:$monitor,server,nowait" ,
+		'-netdev', "type=tap,ifname=$iface,script=no,downscript=no,id=net0",
+		'-device', "${opts{netdev}},netdev=net0,mac=${opts{mac}}",
 	);
 
 	print "Starting ${opts{name}}...\n", join(" ", @vm), "\n";
@@ -83,7 +109,7 @@ my (@vm) = ( '/usr/bin/qemu-system-x86_64',
 } elsif ($cmd eq 'stop') {
 	# Connect to the control port of the vm, and close it.
 	open CONTROL, "|-", "/bin/nc localhost $monitor";
-	print CONTROL "system_powerdown\n";
+	print CONTROL $opts{shutdown_cmd}, "\n";
 	close CONTROL;
 
 	# remove the tap device from the bridge, brint it down and delete it.

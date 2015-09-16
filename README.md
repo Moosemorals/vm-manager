@@ -27,6 +27,27 @@ and a qemu tcp monitor at 5901 + `id` * 2.
 `stop` sends a `system_powerdown` message to qemu and waits for qemu to exit. 
 Then it removes the tap device from the bridge, takes it down and deletes it.
 
+## Config commands
+
+### Required
+
+`name` : (string) Name of the virtual machine
+
+`id` : (number) Number of tap device to use, and seed for serial/monitor ports
+
+`hda` : (string) Path to the block device to use as the hard disk for the machine
+
+`mac` : (string) Hardware network address to assign to the machine
+
+### Optional
+
+`cpu` : (string) QEMU cpu hardware to use. Defaults to 'host'
+
+`netdev` : (string) QEMU network device hardware to use. Defaults to 'virtio-net'
+
+`shutdown_cmd` : (string) String to pass to the QEMU monitor to end the simulation.
+Defaults to 'system_powerdown'
+
 ## TODO:
 
 * Check if the tap device has already been created
