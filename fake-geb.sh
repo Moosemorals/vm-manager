@@ -2,8 +2,8 @@
 
 ## Configuration
 
-NAME=mafdet
-ID=1
+NAME=fake-geb
+ID=2
 
 ## Configuration ends
 
@@ -22,7 +22,7 @@ case "$1" in
 
 		qemu-system-x86_64 \
 			--enable-kvm \
-			-hda /dev/mapper/ptah-${NAME}_main \
+			-hda /dev/mapper/ptah-fake_geb \
 			-m 2G \
 			-rtc base=localtime,clock=host \
 			-smp threads=4 \
@@ -33,12 +33,12 @@ case "$1" in
 			-serial tcp:127.0.0.1:$SERIAL,server,nowait \
 			-monitor tcp:127.0.0.1:$MONITOR,server,nowait \
 			-netdev type=tap,ifname=$IFACE,script=no,downscript=no,id=net0 \
-			-device virtio-net,netdev=net0,mac=08:00:27:6d:69:5c \
+			-device virtio-net,netdev=net0,mac=08:00:27:3d:6e:3a \
 			-daemonize
 
 	;;
 	stop)
-		echo "system_powerdown" | nc localhost $MONITOR 
+		echo "q" | nc localhost $MONITOR 
 		brctl delif br0 $IFACE
 		ip link set $IFACE down
 		ip tuntap del dev $IFACE mode tap
