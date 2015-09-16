@@ -57,4 +57,7 @@ Defaults to 'system_powerdown'
 * Add `create` mode, which will turn on vga (on the virtual hardware), sdl 
   (for display), and not daemonize (because thats incompatiable with display).
 
+## Licence
 
+Code is licenced under the [ISC](LICENCE.txt) licence, which is basicaly the
+MIT licence but tidied up a little.
