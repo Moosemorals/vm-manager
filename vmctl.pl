@@ -11,7 +11,13 @@ use warnings;
 die "Must be root" unless $> == 0;
 
 my (@required_config) = qw/name id hda mac/;
-my (%default_config) = (cpu=>'host', netdev=>'virtio-net', shutdown_cmd=>'system_powerdown');
+my (%default_config) = (
+	cpu=>'host', 
+	netdev=>'virtio-net', 
+	shutdown_cmd=>'system_powerdown', 
+	mem=>'512M',
+	threads=>4
+);
 
 sub read_config($) {
 	my ($confFile) = @_;
@@ -64,9 +70,9 @@ if ($cmd eq 'start') {
 	my (@vm) = ( '/usr/bin/qemu-system-x86_64',
 		'--enable-kvm',
 		'-hda', $opts{hda},
-		'-m', '2G',
+		'-m', $opts{mem},
 		'-rtc', 'base=localtime,clock=host',
-		'-smp', 'threads=4',
+		'-smp', 'threads=' . $opts{threads},
 		'-usbdevice', 'tablet',
 		'-cpu', $opts{cpu},
 		'-vga', 'none',
