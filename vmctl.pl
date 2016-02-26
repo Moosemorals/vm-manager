@@ -8,7 +8,37 @@
 use strict;
 use warnings;
 
-die "Must be root" unless $> == 0;
+#die "Must be root" unless $> == 0;
+
+my ($usage) = <<'EOF';
+
+vm-control - Start and stop Osric's virtual machines
+
+Usage:
+
+  sudo ./vm-control {start|stop|debug} <vmname>
+
+where
+
+  start - Create network devices and start a vm
+
+  stop  - Stop a vm and destroy network devices
+
+  <vmname> - the name of a virtual machine defined in a config file.
+
+Config files are lines of name: value pairs. As an example: 
+
+	name: mafdet
+	id: 1 
+	mac: 08:00:27:6d:69:5c
+	hda: /dev/mapper/ptah-mafdet_main
+
+If you're actualy using this software please tell <osric@fluffypeople.com>
+so I can get all exited.	
+
+	
+EOF
+
 
 my (@required_config) = qw/name id hda mac/;
 my (%default_config) = (
@@ -16,7 +46,7 @@ my (%default_config) = (
 	netdev=>'virtio-net', 
 	shutdown_cmd=>'system_powerdown', 
 	mem=>'512M',
-	threads=>4
+	threads=>1
 );
 
 sub read_config($) {
@@ -46,13 +76,13 @@ sub read_config($) {
 
 
 if (@ARGV != 2) {		
-	print "Usage: $0 {name} {start|stop}\n";
+	print $usage;
 	exit 1;
 } 
 
-my (%opts) = read_config($ARGV[0]);
+my (%opts) = read_config($ARGV[1]);
 
-my $cmd = $ARGV[1];
+my $cmd = $ARGV[0];
 
 my $id = $opts{id};
 my $iface="tap${id}";
@@ -124,4 +154,6 @@ if ($cmd eq 'start') {
 	system "/bin/ip tuntap del dev $iface mode tap";
 } else {
 	print "Unknown command: $cmd\n";
+	print $usage;
+	exit 1;
 }
